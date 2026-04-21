@@ -56,7 +56,6 @@ export default async function handler(request, response) {
     if (event.type === 'checkout.session.completed') {
       console.log('Stripe checkout completed', {
         sessionId: event.data?.object?.id,
-        email: event.data?.object?.customer_details?.email,
         amountTotal: event.data?.object?.amount_total,
       });
     }

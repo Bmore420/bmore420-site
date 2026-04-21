@@ -36,17 +36,13 @@ loadEnvFile('.env.local');
 
 const PORT = Number(process.env.PORT || 8787);
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
-const APP_URL = process.env.APP_URL || 'http://localhost:5173';
+const APP_URL = process.env.APP_URL;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
-const DATA_DIR = path.resolve(process.cwd(), '.data');
-const ORDERS_FILE = path.join(DATA_DIR, 'stripe-orders.json');
 
-function sendJson(response, statusCode, payload) {
+function sendJson(response, statusCode, payload, headers = {}) {
   response.writeHead(statusCode, {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Content-Type': 'application/json',
+    ...headers,
   });
   response.end(JSON.stringify(payload));
 }
@@ -107,46 +103,17 @@ function normalizeCart(cart) {
     .filter((item) => item.quantity > 0 && item.price > 0);
 }
 
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
-}
-
-function readOrders() {
-  ensureDataDir();
-
-  if (!fs.existsSync(ORDERS_FILE)) {
-    return [];
+function getAppUrl() {
+  if (!APP_URL) {
+    throw new Error('Missing APP_URL.');
   }
 
-  try {
-    return JSON.parse(fs.readFileSync(ORDERS_FILE, 'utf8'));
-  } catch {
-    return [];
-  }
-}
-
-function writeOrders(orders) {
-  ensureDataDir();
-  fs.writeFileSync(ORDERS_FILE, JSON.stringify(orders, null, 2));
-}
-
-function upsertOrder(order) {
-  const orders = readOrders();
-  const index = orders.findIndex((item) => item.sessionId === order.sessionId);
-
-  if (index >= 0) {
-    orders[index] = { ...orders[index], ...order };
-  } else {
-    orders.push(order);
+  const appUrl = new URL(APP_URL);
+  if (!/^https?:$/.test(appUrl.protocol)) {
+    throw new Error('APP_URL must use http or https.');
   }
 
-  writeOrders(orders);
-}
-
-function getOrderBySessionId(sessionId) {
-  return readOrders().find((item) => item.sessionId === sessionId) || null;
+  return appUrl.toString().replace(/\/$/, '');
 }
 
 function parseStripeSignature(header) {
@@ -194,20 +161,6 @@ function verifyStripeWebhookSignature(rawBody, signatureHeader) {
   }
 }
 
-function storeCompletedCheckoutSession(session) {
-  upsertOrder({
-    sessionId: session.id,
-    status: session.payment_status || 'unknown',
-    amountTotal: session.amount_total || 0,
-    currency: session.currency || 'usd',
-    customerEmail: session.customer_details?.email || session.customer_email || '',
-    customerName: session.metadata?.customer_name || session.customer_details?.name || '',
-    customerPhone: session.metadata?.customer_phone || session.customer_details?.phone || '',
-    shippingAddress: session.metadata?.shipping_address || '',
-    completedAt: new Date().toISOString(),
-  });
-}
-
 async function createCheckoutSession(body) {
   if (!STRIPE_SECRET_KEY) {
     throw new Error('Missing STRIPE_SECRET_KEY.');
@@ -218,41 +171,32 @@ async function createCheckoutSession(body) {
     throw new Error('Cart is empty.');
   }
 
+  const appUrl = getAppUrl();
   const customer = body.customer && typeof body.customer === 'object' ? body.customer : {};
-  const lineItems = cart.flatMap((item) =>
-    item.size
-      ? [
-          ['line_items[][price_data][currency]', 'usd'],
-          ['line_items[][price_data][product_data][name]', item.name],
-          ['line_items[][price_data][product_data][description]', `Size ${item.size}`],
-          ['line_items[][price_data][unit_amount]', String(item.price * 100)],
-          ['line_items[][quantity]', String(item.quantity)],
-        ]
-      : [],
-  );
-
-  const metadata = [
-    ['metadata[customer_name]', typeof customer.name === 'string' ? customer.name : ''],
-    ['metadata[customer_phone]', typeof customer.phone === 'string' ? customer.phone : ''],
-    ['metadata[shipping_address]', typeof customer.address === 'string' ? customer.address : ''],
-  ];
+  const lineItems = cart.flatMap((item) => [
+    ['line_items[][price_data][currency]', 'usd'],
+    ['line_items[][price_data][product_data][name]', item.name],
+    ['line_items[][price_data][product_data][description]', item.size ? `Size ${item.size}` : ''],
+    ['line_items[][price_data][unit_amount]', String(Math.round(item.price * 100))],
+    ['line_items[][quantity]', String(item.quantity)],
+  ]);
 
   const formEntries = [
     ['mode', 'payment'],
     ['billing_address_collection', 'required'],
     ['phone_number_collection[enabled]', 'true'],
     ['shipping_address_collection[allowed_countries][]', 'US'],
-    ['success_url', `${APP_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`],
-    ['cancel_url', `${APP_URL}/checkout/cancel`],
+    ['success_url', `${appUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`],
+    ['cancel_url', `${appUrl}/checkout/cancel`],
     ...lineItems,
-    ...metadata,
+    ['metadata[customer_name]', typeof customer.name === 'string' ? customer.name : ''],
+    ['metadata[customer_phone]', typeof customer.phone === 'string' ? customer.phone : ''],
+    ['metadata[shipping_address]', typeof customer.address === 'string' ? customer.address : ''],
   ];
 
   if (typeof customer.email === 'string' && customer.email.trim()) {
     formEntries.push(['customer_email', customer.email.trim()]);
   }
-
-  const form = new URLSearchParams(formEntries);
 
   const stripeResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',
@@ -260,11 +204,10 @@ async function createCheckoutSession(body) {
       Authorization: `Bearer ${STRIPE_SECRET_KEY}`,
       'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: form,
+    body: new URLSearchParams(formEntries),
   });
 
   const payload = await stripeResponse.json();
-
   if (!stripeResponse.ok || typeof payload.url !== 'string') {
     const message =
       payload && typeof payload.error?.message === 'string'
@@ -276,15 +219,49 @@ async function createCheckoutSession(body) {
   return payload.url;
 }
 
+async function getCheckoutSessionStatus(sessionId) {
+  if (!STRIPE_SECRET_KEY) {
+    throw new Error('Missing STRIPE_SECRET_KEY.');
+  }
+
+  const stripeResponse = await fetch(
+    `https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(sessionId)}`,
+    {
+      headers: { Authorization: `Bearer ${STRIPE_SECRET_KEY}` },
+    },
+  );
+
+  const session = await stripeResponse.json();
+  if (!stripeResponse.ok) {
+    const message =
+      session && typeof session.error?.message === 'string'
+        ? session.error.message
+        : 'Stripe session lookup failed.';
+    throw new Error(message);
+  }
+
+  return {
+    found: true,
+    order: {
+      sessionId: session.id,
+      status: session.payment_status,
+      amountTotal: session.amount_total,
+      currency: session.currency,
+    },
+  };
+}
+
 async function handleStripeWebhook(request, response) {
   try {
     const rawBody = await readRawBody(request);
     verifyStripeWebhookSignature(rawBody, request.headers['stripe-signature']);
 
     const event = JSON.parse(rawBody.toString('utf8'));
-
-    if (event.type === 'checkout.session.completed' && event.data?.object?.id) {
-      storeCompletedCheckoutSession(event.data.object);
+    if (event.type === 'checkout.session.completed') {
+      console.log('Stripe checkout completed', {
+        sessionId: event.data?.object?.id,
+        amountTotal: event.data?.object?.amount_total,
+      });
     }
 
     sendJson(response, 200, { received: true });
@@ -302,7 +279,8 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (request.method === 'OPTIONS') {
-    sendJson(response, 204, {});
+    response.writeHead(204, { Allow: 'GET, POST, OPTIONS' });
+    response.end();
     return;
   }
 
@@ -325,19 +303,22 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (request.method === 'GET' && request.url.startsWith('/api/checkout-session-status')) {
-    const url = new URL(request.url, `http://localhost:${PORT}`);
-    const sessionId = url.searchParams.get('session_id');
+    try {
+      const url = new URL(request.url, `http://localhost:${PORT}`);
+      const sessionId = url.searchParams.get('session_id');
 
-    if (!sessionId) {
-      sendJson(response, 400, { error: 'Missing session_id.' });
-      return;
+      if (!sessionId) {
+        sendJson(response, 400, { error: 'Missing session_id.' });
+        return;
+      }
+
+      const payload = await getCheckoutSessionStatus(sessionId);
+      sendJson(response, 200, payload);
+    } catch (error) {
+      sendJson(response, 400, {
+        error: error instanceof Error ? error.message : 'Stripe session lookup failed.',
+      });
     }
-
-    const order = getOrderBySessionId(sessionId);
-    sendJson(response, 200, {
-      found: Boolean(order),
-      order,
-    });
     return;
   }
 

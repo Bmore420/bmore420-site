@@ -1,4 +1,5 @@
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
+const APP_URL = process.env.APP_URL;
 
 function normalizeCart(cart) {
   if (!Array.isArray(cart)) return [];
@@ -13,21 +14,22 @@ function normalizeCart(cart) {
     .filter((item) => item.quantity > 0 && item.price > 0);
 }
 
-function getAppUrl(request) {
-  if (process.env.APP_URL) return process.env.APP_URL;
-  const origin = request.headers.origin;
-  if (origin) return origin;
-  const host = request.headers['x-forwarded-host'] || request.headers.host;
-  const proto = request.headers['x-forwarded-proto'] || 'https';
-  return `${proto}://${host}`;
+function getAppUrl() {
+  if (!APP_URL) {
+    throw new Error('Missing APP_URL.');
+  }
+
+  const appUrl = new URL(APP_URL);
+  if (!/^https?:$/.test(appUrl.protocol)) {
+    throw new Error('APP_URL must use http or https.');
+  }
+
+  return appUrl.toString().replace(/\/$/, '');
 }
 
 export default async function handler(request, response) {
-  response.setHeader('Access-Control-Allow-Origin', '*');
-  response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (request.method === 'OPTIONS') {
+    response.setHeader('Allow', 'POST, OPTIONS');
     response.status(204).end();
     return;
   }
@@ -51,7 +53,7 @@ export default async function handler(request, response) {
     }
 
     const customer = body.customer && typeof body.customer === 'object' ? body.customer : {};
-    const appUrl = getAppUrl(request);
+    const appUrl = getAppUrl();
 
     const lineItems = cart.flatMap((item) => [
       ['line_items[][price_data][currency]', 'usd'],

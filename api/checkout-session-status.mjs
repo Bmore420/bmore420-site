@@ -1,11 +1,8 @@
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
 export default async function handler(request, response) {
-  response.setHeader('Access-Control-Allow-Origin', '*');
-  response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (request.method === 'OPTIONS') {
+    response.setHeader('Allow', 'GET, OPTIONS');
     response.status(204).end();
     return;
   }
@@ -47,8 +44,6 @@ export default async function handler(request, response) {
         status: session.payment_status,
         amountTotal: session.amount_total,
         currency: session.currency,
-        customerEmail: session.customer_details?.email || session.customer_email || '',
-        customerName: session.customer_details?.name || '',
       },
     });
   } catch (error) {

@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { getCartItemCount, readCart, subscribeToCart } from '../cart';
 
 export default function Navbar() {
+  const { pathname } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
 
@@ -12,6 +13,10 @@ export default function Navbar() {
     syncCartCount();
     return subscribeToCart(syncCartCount);
   }, []);
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   return (
     <nav className="bg-black shadow-[inset_0_-1px_0_rgba(255,255,255,0.75)] w-full z-40 sticky top-0">

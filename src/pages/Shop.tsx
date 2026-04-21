@@ -42,9 +42,6 @@ export default function Shop() {
           <p className="text-lg text-gray-200">
             Browse the current collection in one dedicated place.
           </p>
-          <p className="text-lg italic text-gray-200">
-            Shipping is always free when you purchase directly from us!
-          </p>
           <div className="mt-6">
             <Link
               to="/cart"
@@ -70,14 +67,9 @@ export default function Shop() {
               </div>
 
               <div className="p-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-white">{product.name}</h2>
-                    <p className="text-primary font-semibold mt-2">$30</p>
-                  </div>
-                  <span className="rounded-full border border-primary/40 px-3 py-1 text-sm text-primary">
-                    Free Shipping
-                  </span>
+                <div>
+                  <h2 className="text-2xl font-bold text-white">{product.name}</h2>
+                  <p className="text-primary font-semibold mt-2">$30</p>
                 </div>
 
                 <div className="mt-6">
