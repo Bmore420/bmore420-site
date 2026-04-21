@@ -1,6 +1,15 @@
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
 export default async function handler(request, response) {
+  response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (request.method === 'OPTIONS') {
+    response.status(204).end();
+    return;
+  }
+
   if (request.method !== 'GET') {
     response.status(405).json({ error: 'Method not allowed.' });
     return;

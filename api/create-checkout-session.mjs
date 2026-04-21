@@ -15,12 +15,18 @@ function normalizeCart(cart) {
 
 function getAppUrl(request) {
   if (process.env.APP_URL) return process.env.APP_URL;
+  const origin = request.headers.origin;
+  if (origin) return origin;
   const host = request.headers['x-forwarded-host'] || request.headers.host;
   const proto = request.headers['x-forwarded-proto'] || 'https';
   return `${proto}://${host}`;
 }
 
 export default async function handler(request, response) {
+  response.setHeader('Access-Control-Allow-Origin', '*');
+  response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   if (request.method === 'OPTIONS') {
     response.status(204).end();
     return;

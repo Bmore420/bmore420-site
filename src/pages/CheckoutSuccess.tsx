@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { clearCart } from '../cart';
+import { apiUrl } from '../apiBase';
 
 export default function CheckoutSuccess() {
   const [status, setStatus] = useState<'checking' | 'confirmed' | 'pending' | 'error'>('checking');
@@ -13,7 +14,7 @@ export default function CheckoutSuccess() {
       return;
     }
 
-    const statusUrl = `/api/checkout-session-status?session_id=${encodeURIComponent(sessionId)}`;
+    const statusUrl = apiUrl(`/api/checkout-session-status?session_id=${encodeURIComponent(sessionId)}`);
 
     const checkStatus = async () => {
       try {

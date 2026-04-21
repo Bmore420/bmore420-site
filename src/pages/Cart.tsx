@@ -7,6 +7,7 @@ import {
   updateCartItemQuantity,
   type CartItem,
 } from '../cart';
+import { apiUrl } from '../apiBase';
 
 export default function Cart() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -31,7 +32,7 @@ export default function Cart() {
     setIsRedirecting(true);
 
     try {
-      const response = await fetch('/api/create-checkout-session', {
+      const response = await fetch(apiUrl('/api/create-checkout-session'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
