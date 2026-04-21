@@ -77,9 +77,20 @@ export default defineConfig([
 2. Set `STRIPE_SECRET_KEY` to your Stripe test secret key.
 3. Set `STRIPE_WEBHOOK_SECRET` after you start Stripe CLI webhook forwarding.
 4. Set `APP_URL` to the frontend origin you are using.
+5. Set `VITE_API_BASE` to the Stripe API origin when the frontend and API are hosted on different domains. Leave it empty when the frontend and API share the same origin.
 5. Run `npm run dev` for the frontend and `npm run dev:api` for the local Stripe API.
 
 The cart page calls the local Stripe API and redirects to Stripe Checkout. Success returns to `/checkout/success`; cancel returns to `/checkout/cancel`.
+
+### Split hosting
+
+If the static site is hosted on GitHub Pages and the Stripe API is hosted on Vercel:
+
+- Set `APP_URL` on Vercel to the public frontend origin, for example `https://bmore420.com`.
+- Set `VITE_API_BASE` in the frontend build to the deployed Vercel API origin, for example `https://your-project.vercel.app`.
+- The Vercel API routes send CORS headers that allow requests from `APP_URL`.
+
+In that setup, the GitHub Pages domain does not need to be attached to the Vercel project just for Stripe.
 
 ### Webhooks
 

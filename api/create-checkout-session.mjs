@@ -1,6 +1,17 @@
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const APP_URL = process.env.APP_URL;
 
+function getAllowedOrigin() {
+  const appUrl = getAppUrl();
+  return new URL(appUrl).origin;
+}
+
+function applyCorsHeaders(response) {
+  response.setHeader('Access-Control-Allow-Origin', getAllowedOrigin());
+  response.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
 function normalizeCart(cart) {
   if (!Array.isArray(cart)) return [];
   return cart
@@ -28,6 +39,8 @@ function getAppUrl() {
 }
 
 export default async function handler(request, response) {
+  applyCorsHeaders(response);
+
   if (request.method === 'OPTIONS') {
     response.setHeader('Allow', 'POST, OPTIONS');
     response.status(204).end();

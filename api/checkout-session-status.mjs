@@ -1,6 +1,28 @@
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
+function getAllowedOrigin() {
+  const appUrl = process.env.APP_URL;
+  if (!appUrl) {
+    throw new Error('Missing APP_URL.');
+  }
+
+  const url = new URL(appUrl);
+  if (!/^https?:$/.test(url.protocol)) {
+    throw new Error('APP_URL must use http or https.');
+  }
+
+  return url.origin;
+}
+
+function applyCorsHeaders(response) {
+  response.setHeader('Access-Control-Allow-Origin', getAllowedOrigin());
+  response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  response.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
 export default async function handler(request, response) {
+  applyCorsHeaders(response);
+
   if (request.method === 'OPTIONS') {
     response.setHeader('Allow', 'GET, OPTIONS');
     response.status(204).end();

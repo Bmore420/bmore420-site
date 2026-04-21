@@ -47,6 +47,19 @@ function sendJson(response, statusCode, payload, headers = {}) {
   response.end(JSON.stringify(payload));
 }
 
+function getAllowedOrigin() {
+  const appUrl = getAppUrl();
+  return new URL(appUrl).origin;
+}
+
+function getCorsHeaders(methods) {
+  return {
+    'Access-Control-Allow-Origin': getAllowedOrigin(),
+    'Access-Control-Allow-Methods': methods,
+    'Access-Control-Allow-Headers': 'Content-Type',
+  };
+}
+
 function parseBody(request) {
   return new Promise((resolve, reject) => {
     let raw = '';
@@ -279,7 +292,10 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (request.method === 'OPTIONS') {
-    response.writeHead(204, { Allow: 'GET, POST, OPTIONS' });
+    response.writeHead(204, {
+      Allow: 'GET, POST, OPTIONS',
+      ...getCorsHeaders('GET, POST, OPTIONS'),
+    });
     response.end();
     return;
   }
@@ -288,11 +304,11 @@ const server = http.createServer(async (request, response) => {
     try {
       const body = await parseBody(request);
       const url = await createCheckoutSession(body);
-      sendJson(response, 200, { url });
+      sendJson(response, 200, { url }, getCorsHeaders('POST, OPTIONS'));
     } catch (error) {
       sendJson(response, 400, {
         error: error instanceof Error ? error.message : 'Checkout could not be created.',
-      });
+      }, getCorsHeaders('POST, OPTIONS'));
     }
     return;
   }
@@ -313,11 +329,11 @@ const server = http.createServer(async (request, response) => {
       }
 
       const payload = await getCheckoutSessionStatus(sessionId);
-      sendJson(response, 200, payload);
+      sendJson(response, 200, payload, getCorsHeaders('GET, OPTIONS'));
     } catch (error) {
       sendJson(response, 400, {
         error: error instanceof Error ? error.message : 'Stripe session lookup failed.',
-      });
+      }, getCorsHeaders('GET, OPTIONS'));
     }
     return;
   }
