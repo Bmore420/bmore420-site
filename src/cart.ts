@@ -3,19 +3,19 @@ export const sizes = ['S', 'M', 'L', 'XL', 'XXL'] as const;
 export const products = [
   {
     id: 'shirt-circle',
-    name: 'Circle Maryland Tee',
+    name: 'Bmore420 MD Theme T-Shirt',
     image: '/images/shop/shirt-circle.png',
     price: 30,
   },
   {
     id: 'shirt-stripe',
-    name: 'Maryland Stripe Tee',
+    name: 'Bmore420 MD License Plate T-Shirt',
     image: '/images/shop/shirt-stripe.png',
     price: 30,
   },
   {
     id: 'shirt-bmore',
-    name: 'Classic Bmore 420 Tee',
+    name: 'Bmore 420 Logo T-Shirt',
     image: '/images/shop/shirt-bmore.png',
     price: 30,
   },
