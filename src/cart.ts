@@ -3,7 +3,7 @@ export const sizes = ['S', 'M', 'L', 'XL', 'XXL'] as const;
 export const products = [
   {
     id: 'shirt-circle',
-    name: 'Bmore420 MD Theme T-Shirt',
+    name: 'Bmore420 Logo T-Shirt',
     image: '/images/shop/shirt-circle.png',
     price: 30,
   },
@@ -15,7 +15,7 @@ export const products = [
   },
   {
     id: 'shirt-bmore',
-    name: 'Bmore 420 Logo T-Shirt',
+    name: 'Bmore420 MD Theme T-Shirt',
     image: '/images/shop/shirt-bmore.png',
     price: 30,
   },
