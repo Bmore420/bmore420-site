@@ -1,3 +1,5 @@
+import { summarizeCartForMetadata } from '../stripeNotifications.mjs';
+
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 const APP_URL = process.env.APP_URL;
 
@@ -87,6 +89,8 @@ export default async function handler(request, response) {
       ['metadata[customer_name]', typeof customer.name === 'string' ? customer.name : ''],
       ['metadata[customer_phone]', typeof customer.phone === 'string' ? customer.phone : ''],
       ['metadata[shipping_address]', typeof customer.address === 'string' ? customer.address : ''],
+      ['metadata[item_count]', String(cart.reduce((count, item) => count + item.quantity, 0))],
+      ['metadata[order_summary]', summarizeCartForMetadata(cart)],
     ];
 
     if (typeof customer.email === 'string' && customer.email.trim()) {

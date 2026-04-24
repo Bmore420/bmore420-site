@@ -1,4 +1,5 @@
 import crypto from 'node:crypto';
+import { sendSaleNotifications } from '../stripeNotifications.mjs';
 
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -54,9 +55,11 @@ export default async function handler(request, response) {
 
     const event = JSON.parse(rawBody.toString('utf8'));
     if (event.type === 'checkout.session.completed') {
+      const notificationResult = await sendSaleNotifications(event);
       console.log('Stripe checkout completed', {
         sessionId: event.data?.object?.id,
         amountTotal: event.data?.object?.amount_total,
+        notificationChannels: notificationResult.channels,
       });
     }
 
