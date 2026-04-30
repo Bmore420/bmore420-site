@@ -24,13 +24,25 @@ export default function Contact() {
             </div>
             
             <div>
-              <label htmlFor="contactInfo" className="block text-sm font-medium text-gray-300 mb-2">Email & Phone Number</label>
-              <input 
-                type="text" 
-                id="contactInfo" 
-                name="Email_and_Phone" 
-                required 
-                placeholder="you@example.com & 410-210-1000"
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">Email</label>
+              <input
+                type="email"
+                id="email"
+                name="Email"
+                required
+                placeholder="you@example.com"
+                className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">Phone Number</label>
+              <input
+                type="tel"
+                id="phone"
+                name="Phone"
+                required
+                placeholder="410-210-1000"
                 className="w-full bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
               />
             </div>

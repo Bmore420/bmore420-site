@@ -1,38 +1,5 @@
 import { useState } from 'react';
 
-const calendarDays = [
-  { day: 1 },
-  { day: 2 },
-  { day: 3 },
-  { day: 4 },
-  { day: 5 },
-  { day: 6 },
-  { day: 7, label: 'Live DJ Night' },
-  { day: 8 },
-  { day: 9 },
-  { day: 10 },
-  { day: 11 },
-  { day: 12 },
-  { day: 13 },
-  { day: 14, label: 'Vendor Pop-Up' },
-  { day: 15 },
-  { day: 16 },
-  { day: 17 },
-  { day: 18 },
-  { day: 19 },
-  { day: 20 },
-  { day: 21, label: '420 Community Meetup' },
-  { day: 22 },
-  { day: 23 },
-  { day: 24 },
-  { day: 25 },
-  { day: 26 },
-  { day: 27 },
-  { day: 28, label: 'Merch Drop' },
-  { day: 29 },
-  { day: 30 },
-];
-
 const featuredEvents = [
   {
     title: '420 Community Meetup',
@@ -79,7 +46,7 @@ export default function Events() {
                 Pull up for community nights, drops, and Baltimore energy.
               </h1>
               <p className="text-lg text-gray-200 mt-6 max-w-2xl">
-                Keep up with upcoming events, special drops, live experiences, and local community gatherings. Check the calendar and subscribe for event alerts, discounts, and new announcements.
+                Keep up with upcoming events, special drops, live experiences, and local community gatherings. Subscribe for event alerts, discounts, and new announcements.
               </p>
             </div>
 
@@ -95,80 +62,25 @@ export default function Events() {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-10 items-start">
-          <div className="rounded-[2rem] border border-white/10 bg-black/45 p-6 md:p-8">
-            <div className="flex items-end justify-between gap-4 mb-6">
-              <div>
-                <p className="text-sm uppercase tracking-[0.35em] text-gray-400 mb-2">Calendar</p>
-                <h2 className="text-3xl md:text-4xl font-bold text-white">April 2026</h2>
-              </div>
-              <span className="text-sm text-gray-400">Dates can be updated as new events are locked in.</span>
-            </div>
-
-            <div className="space-y-3 md:hidden">
-              {calendarDays
-                .filter((entry) => entry.label)
-                .map((entry, index) => (
-                  <div
-                    key={`mobile-${entry.day}-${index}`}
-                    className="rounded-2xl border border-primary/50 bg-primary/10 p-4"
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <span className="text-sm uppercase tracking-[0.2em] text-gray-400">April</span>
-                      <span className="text-2xl font-bold text-white">{entry.day}</span>
+        <section className="grid grid-cols-1 xl:grid-cols-2 gap-10 items-start">
+          <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6 md:p-8">
+            <h2 className="text-3xl font-bold text-white mb-5">Featured Events</h2>
+            <div className="space-y-4">
+              {featuredEvents.map((eventItem) => (
+                <article key={eventItem.title} className="rounded-2xl border border-white/10 bg-black/30 p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-white">{eventItem.title}</h3>
+                      <p className="text-primary mt-1">{eventItem.date} • {eventItem.time}</p>
                     </div>
-                    <p className="mt-3 text-sm leading-relaxed text-primary">{entry.label}</p>
                   </div>
-                ))}
-            </div>
-
-            <div className="hidden md:grid grid-cols-7 gap-3 text-center text-sm uppercase tracking-[0.2em] text-gray-400 mb-3">
-              <div>Sun</div>
-              <div>Mon</div>
-              <div>Tue</div>
-              <div>Wed</div>
-              <div>Thu</div>
-              <div>Fri</div>
-              <div>Sat</div>
-            </div>
-
-            <div className="hidden md:grid grid-cols-7 gap-3">
-              {calendarDays.map((entry, index) => (
-                <div
-                  key={`${entry.day}-${index}`}
-                  className={`min-h-24 rounded-2xl border p-3 text-left ${
-                    entry.label
-                      ? 'border-primary/50 bg-primary/10'
-                      : 'border-white/10 bg-white/5'
-                  }`}
-                >
-                  <div className="font-bold text-white">{entry.day}</div>
-                  {entry.label ? (
-                    <p className="text-xs text-primary mt-2 leading-relaxed">{entry.label}</p>
-                  ) : null}
-                </div>
+                  <p className="text-gray-300 mt-3">{eventItem.details}</p>
+                </article>
               ))}
             </div>
-          </div>
+          </section>
 
           <div className="space-y-6">
-            <section className="rounded-[2rem] border border-white/10 bg-white/5 p-6 md:p-8">
-              <h2 className="text-3xl font-bold text-white mb-5">Featured Events</h2>
-              <div className="space-y-4">
-                {featuredEvents.map((eventItem) => (
-                  <article key={eventItem.title} className="rounded-2xl border border-white/10 bg-black/30 p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="text-xl font-bold text-white">{eventItem.title}</h3>
-                        <p className="text-primary mt-1">{eventItem.date} • {eventItem.time}</p>
-                      </div>
-                    </div>
-                    <p className="text-gray-300 mt-3">{eventItem.details}</p>
-                  </article>
-                ))}
-              </div>
-            </section>
-
             <section className="rounded-[2rem] border border-white/10 bg-black/45 p-6 md:p-8">
               <h2 className="text-3xl font-bold text-white mb-3">Subscribe</h2>
               <p className="text-gray-300 mb-6">

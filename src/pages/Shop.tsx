@@ -42,10 +42,13 @@ export default function Shop() {
           <p className="text-lg text-gray-200">
             Browse the current collection in one dedicated place.
           </p>
+          <p className="text-lg italic text-primary mt-1">
+            Shipping is always free!
+          </p>
           <div className="mt-6">
             <Link
               to="/cart"
-              className="inline-block rounded-full border border-white/15 bg-black/35 px-6 py-3 text-white font-bold transition-colors hover:border-primary/60 hover:text-primary"
+              className="inline-block rounded-full border border-white/15 bg-black/35 px-6 py-3 text-white font-bold transition-colors hover:border-primary/60 hover:text-primary active:bg-primary active:text-white active:border-primary"
             >
               View Cart
             </Link>

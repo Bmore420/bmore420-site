@@ -70,13 +70,18 @@ export default async function handler(request, response) {
     const customer = body.customer && typeof body.customer === 'object' ? body.customer : {};
     const appUrl = getAppUrl();
 
-    const lineItems = cart.flatMap((item) => [
-      ['line_items[][price_data][currency]', 'usd'],
-      ['line_items[][price_data][product_data][name]', item.name],
-      ['line_items[][price_data][product_data][description]', item.size ? `Size ${item.size}` : ''],
-      ['line_items[][price_data][unit_amount]', String(Math.round(item.price * 100))],
-      ['line_items[][quantity]', String(item.quantity)],
-    ]);
+    const lineItems = cart.flatMap((item, index) => {
+      const entries = [
+        [`line_items[${index}][price_data][currency]`, 'usd'],
+        [`line_items[${index}][price_data][product_data][name]`, item.name],
+        [`line_items[${index}][price_data][unit_amount]`, String(Math.round(item.price * 100))],
+        [`line_items[${index}][quantity]`, String(item.quantity)],
+      ];
+      if (item.size) {
+        entries.push([`line_items[${index}][price_data][product_data][description]`, `Size ${item.size}`]);
+      }
+      return entries;
+    });
 
     const formEntries = [
       ['mode', 'payment'],

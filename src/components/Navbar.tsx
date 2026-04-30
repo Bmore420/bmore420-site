@@ -70,7 +70,7 @@ export default function Navbar() {
             <Link onClick={() => setIsOpen(false)} to="/events" className="text-white hover:text-primary block px-3 py-4 text-xl font-medium">Events</Link>
             <Link onClick={() => setIsOpen(false)} to="/blog" className="text-white hover:text-primary block px-3 py-4 text-xl font-medium">Blog</Link>
             <Link onClick={() => setIsOpen(false)} to="/contact" className="text-white hover:text-primary block px-3 py-4 text-xl font-medium">Contact</Link>
-            <Link onClick={() => setIsOpen(false)} to="/shop" className="bg-primary hover:bg-green-600 text-white block px-6 py-4 mt-2 rounded-md text-xl font-bold w-[80%] text-center">Shop</Link>
+            <Link onClick={() => setIsOpen(false)} to="/shop" className="text-white hover:text-primary block px-3 py-4 text-xl font-medium">Shop</Link>
             <Link onClick={() => setIsOpen(false)} to="/cart" className="text-white hover:text-primary block px-3 py-4 text-xl font-medium">
               Cart ({cartCount})
             </Link>
